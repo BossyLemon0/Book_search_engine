@@ -8,7 +8,9 @@ const {
   } = require('../controllers/user-controller');
 
 const resolvers = {
-
+    Query:{
+        createOneUser: createUser
+    }
 };
 
 module.exports = resolvers;
