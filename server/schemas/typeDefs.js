@@ -23,7 +23,7 @@ type Auth{
 }
 
 type Query{
-    getSingleUser: User
+    getSingleUser(userId: ID, username:ID ): User
 }
 
 type Mutation{
