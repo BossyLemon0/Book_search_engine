@@ -8,8 +8,15 @@ const {
   } = require('../controllers/user-controller');
 
 const resolvers = {
-    Query:{
-        createOneUser: createUser
+    Query: {
+        getSingleUser,
+    },
+    Mutation: {
+        createUser,
+        saveBook,
+        deleteBook,
+        login
+
     }
 };
 
