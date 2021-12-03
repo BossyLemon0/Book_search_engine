@@ -6,9 +6,10 @@ const { signToken } = require('../utils/auth');
 
 module.exports = {
   // get a single user by either their id or their username
-  async getSingleUser(parent, { user = null, params }) {
+  // idk if the original turnery operator is correct, going to change it
+  async getSingleUser(parent, {  userId , username }) {
     const foundUser = await User.findOne({
-      $or: [{ _id: user ? user._id : params.id }, { username: params.username }],
+      $or: [{ _id: userId }, { username: username }],
     });
 
     if (!foundUser) {
@@ -18,8 +19,8 @@ module.exports = {
     return foundUser;
   },
   // create a user, sign a token, and send it back (to client/src/components/SignUpForm.js)
-  async createUser(parent, { body }) {
-    const user = await User.create(body);
+  async createUser(parent, { username, email, password }) {
+    const user = await User.create(username, email, password);
 
     if (!user) {
       throw new AuthenticationError('Something is wrong!');
@@ -29,13 +30,13 @@ module.exports = {
   },
   // login a user, sign a token, and send it back (to client/src/components/LoginForm.js)
   // {body} is destructured req.body
-  async login(parent, { body }) {
-    const user = await User.findOne({ $or: [{ username: body.username }, { email: body.email }] });
+  async login(parent, { username, email, password }) {
+    const user = await User.findOne({ $or: [{ username }, { email }] });
     if (!user) {
       throw new AuthenticationError("Can't find this user");
     }
 
-    const correctPw = await user.isCorrectPassword(body.password);
+    const correctPw = await user.isCorrectPassword(password);
 
     if (!correctPw) {
       throw new AuthenticationError('Wrong password!');
@@ -45,7 +46,7 @@ module.exports = {
   },
   // save a book to a user's `savedBooks` field by adding it to the set (to prevent duplicates)
   // user comes from `req.user` created in the auth middleware function
-  async saveBook(parent, { user, body }) {
+  async saveBook(parent, { userId, body }) {
     console.log(user);
     try {
       const updatedUser = await User.findOneAndUpdate(
@@ -60,10 +61,10 @@ module.exports = {
     }
   },
   // remove a book from `savedBooks`
-  async deleteBook(parent, { user, params }) {
+  async deleteBook(parent, { userId, bookId }) {
     const updatedUser = await User.findOneAndUpdate(
-      { _id: user._id },
-      { $pull: { savedBooks: { bookId: params.bookId } } },
+      { _id: userId },
+      { $pull: { savedBooks: { bookId } } },
       { new: true }
     );
     if (!updatedUser) {
